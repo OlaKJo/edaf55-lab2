@@ -16,19 +16,18 @@ public class Person extends Thread{
 				e.printStackTrace();
 			}
 
-//			int initialFloor = (int) Math.round(Math.random() * 6);
-//			int destinationFloor = (int) Math.round(Math.random() * 6);
-			int initialFloor = 0;
-			int destinationFloor = 6;
+			int initialFloor = (int) Math.round(Math.random() * 6);
+			int destinationFloor = (int) Math.round(Math.random() * 6);
+//			int initialFloor = 6;
+//			int destinationFloor = 3;
 			while (initialFloor == destinationFloor) {
 				destinationFloor = (int) Math.round(Math.random() * 6);
 			}
 			System.out.println("Created new person. initial floor: " + initialFloor + " destination floor: " + destinationFloor);
-			mon.addPassenger(initialFloor);
-			//mon.updateLevel(initialFloor);
-			
-			mon.load(destinationFloor);
-			mon.unload();
+		
+			mon.addPassenger(initialFloor, destinationFloor);
+			mon.load(initialFloor, destinationFloor);
+			mon.unload(destinationFloor);
 		}
 	}
 }

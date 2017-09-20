@@ -6,7 +6,7 @@ public class LiftSimulator {
 		LiftView lv = new LiftView();
 
 		LiftMonitor mon = new LiftMonitor(0, 1, lv);
-		for (int i = 0; i < 5; i++) {
+		for (int i = 0; i < 10; i++) {
 			Person p = new Person(mon);
 			p.start();
 		}

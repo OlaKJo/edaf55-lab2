@@ -1,7 +1,7 @@
 package lift;
 
 public class LiftMonitor {
-	
+
 	int here;
 	// If here!=next, here (floor number) tells from which floor
 	// the lift is moving and next to which floor it is moving.
@@ -16,60 +16,83 @@ public class LiftMonitor {
 	// the lift at the various floors.
 	int load;
 	// The number of people currently occupying the lift.
-	
+
 	int dir;
-	
+
 	private LiftView liftView;
-	
+
 	public LiftMonitor(int here, int next, LiftView liftView) {
 		this.here = here;
 		this.next = next;
-		dir = here - next;
+		dir = next - here;
 		this.liftView = liftView;
 		waitEntry = new int[7];
 		waitExit = new int[7];
 	}
-	
+
 	synchronized void updateElevator() {
+		while (!passengerIsWaiting() && load == 0)
+			try {
+				wait();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		here += dir;
 		if (here == 6) {
 			dir = -1;
 		} else if (here == 0) {
 			dir = 1;
 		}
-		here += dir;
-
-		liftView.drawLift(here,load);
+		liftView.drawLift(here, load);
 		notifyAll();
 	}
-	synchronized void addPassenger(int initialFloor) {
+
+	private boolean passengerIsWaiting() {
+		boolean waiting = false;
+		for (int i : waitEntry) {
+			waiting = i > 0 ? true : false;
+			if (waiting)
+				break;
+		}
+		return waiting;
+	}
+
+	synchronized void addPassenger(int initialFloor, int destinationFloor) {
 		waitEntry[initialFloor]++;
-		liftView.drawLevel(initialFloor,waitEntry[initialFloor]);
-		while (here != initialFloor || isFull())
+		liftView.drawLevel(initialFloor, waitEntry[initialFloor]);
+		notifyAll();
+		
+	}
+
+
+	// possibly merge load unload addpassenger to single public method
+	
+	synchronized void load(int initialFloor, int destinationFloor) {
+		int passDir = destinationFloor - initialFloor;
+		while ((here != initialFloor || isFull()) || (passDir * dir < 0))
 			try {
 				wait();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-	}
-	
-	synchronized void load(int dest) {
-		waitExit[dest]++;
+		waitExit[destinationFloor]++;
 		load++;
 		waitEntry[here]--;
-		liftView.drawLift(here,load);
-		liftView.drawLevel(here,waitEntry[here]);
-		while (here != dest)
+		liftView.drawLift(here, load);
+		liftView.drawLevel(here, waitEntry[here]);
+		
+	}
+
+	synchronized void unload(int destinationFloor) {
+		while (here != destinationFloor)
 			try {
 				wait();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-	}
-	
-	synchronized void unload() {
 		waitExit[here]--;
 		load--;
-		liftView.drawLevel(here,waitEntry[here]);
+		liftView.drawLevel(here, waitEntry[here]);
 		liftView.drawLift(here, load);
 	}
 
