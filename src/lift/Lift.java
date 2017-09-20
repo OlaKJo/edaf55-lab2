@@ -9,14 +9,13 @@ public class Lift extends Thread {
 	
 	public void run() {
 		while (true) {
-			long waitTime = Math.round(Math.random() * 5);
+			long waitTime = 2000;
 			try {
 				Thread.sleep(waitTime);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 			mon.updateElevator();
-			
 		}
 	}
 }

@@ -91,18 +91,6 @@ public class LiftView {
 		} catch(InterruptedException e) { }
 	}
 
-
-	public static void main(String[] args) {
-		LiftView lv = new LiftView();
-		lv.drawLift(0,3);
-		lv.drawLevel(5,4);
-		try {
-			Thread.sleep(1000);
-		} catch(InterruptedException e) { }
-		lv.moveLift(0,1);
-		lv.drawLift(1,2);
-	}
-
 	private class FixedSizePanel extends JPanel {
 		private static final long serialVersionUID = 1L;
 		private Dimension dim;

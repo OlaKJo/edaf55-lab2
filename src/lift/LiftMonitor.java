@@ -19,10 +19,15 @@ public class LiftMonitor {
 	
 	int dir;
 	
-	public LiftMonitor(int here, int next) {
+	private LiftView liftView;
+	
+	public LiftMonitor(int here, int next, LiftView liftView) {
 		this.here = here;
 		this.next = next;
 		dir = here - next;
+		this.liftView = liftView;
+		waitEntry = new int[7];
+		waitExit = new int[7];
 	}
 	
 	synchronized void updateElevator() {
@@ -31,30 +36,44 @@ public class LiftMonitor {
 		} else if (here == 0) {
 			dir = 1;
 		}
+		here += dir;
 
-		next = here + dir;
-		waitExit[here] = 0;
-		if(waitEntry[here] > 0) {
-			int currentCapacity = 4 - load;
-			if (waitEntry[here] <= currentCapacity) {
-				waitExit[here] = waitEntry[here];
-				waitEntry[here] = 0;
-			}
-			waitExit[here]++;
-		}
+		liftView.drawLift(here,load);
 		notifyAll();
 	}
-	public void addPassenger(int initialFloor, int destinationFloor) {
+	synchronized void addPassenger(int initialFloor) {
 		waitEntry[initialFloor]++;
+		liftView.drawLevel(initialFloor,waitEntry[initialFloor]);
+		while (here != initialFloor || isFull())
+			try {
+				wait();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 	}
 	
 	synchronized void load(int dest) {
 		waitExit[dest]++;
 		load++;
+		waitEntry[here]--;
+		liftView.drawLift(here,load);
+		liftView.drawLevel(here,waitEntry[here]);
+		while (here != dest)
+			try {
+				wait();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 	}
 	
 	synchronized void unload() {
 		waitExit[here]--;
 		load--;
+		liftView.drawLevel(here,waitEntry[here]);
+		liftView.drawLift(here, load);
+	}
+
+	private boolean isFull() {
+		return load >= 4;
 	}
 }
